@@ -1,0 +1,156 @@
+
+public class djikstras_shortest
+{
+
+	public static Object dijkstra(int[][] matrix, int source , int dest ,int choice)
+	{
+		int index = source;
+		int count =0 ;
+		int[] path_length = matrix[source].clone();
+
+		boolean[] ar = new boolean[matrix[0].length];
+
+		int[] N = new int[matrix[0].length];
+		N[count] = index;
+		int[] pathIndex = new int[matrix[0].length];
+
+		for (int i = 0; i < pathIndex.length; i++) 
+		{
+			pathIndex[i] = source;
+
+		}
+		ar[index] = true;
+		while (count < matrix[0].length) 
+		{
+
+			int min = Integer.MAX_VALUE;
+
+			for (int i = 0; i < path_length.length; i++) {
+				if (!ar[i] && path_length[i] != -1 && i != index) {
+					//	System.out.println(ar[i]+" "+path_length[i]+" ");
+
+					if (path_length[i] < min) {
+						min = path_length[i];
+						index = i;
+					}
+				}
+			}
+			if (index == dest) 
+			{
+				break;
+			}
+			ar[index] = true;
+			count++;
+			N[count] = index;
+
+			for (int i = 0; i < path_length.length; i++) {
+
+				if (path_length[i] == -1 && matrix[index][i] != -1 && ! ar[i]) 
+				{
+					path_length[i] = path_length[index] + matrix[index][i];
+					pathIndex[i] = index;
+				}
+				else if (matrix[index][i] != -1 && path_length[index] + matrix[index][i] < path_length[i])
+				{
+
+					path_length[i] = path_length[index] + matrix[index][i];
+					pathIndex[i] = index;
+				}
+			}
+		}
+		if(choice ==2 )
+		{
+			System.out.print("Shortest route from " + (source + 1) + " to " + (dest + 1) + " is --> ");
+			leastCost(pathIndex, source, dest, path_length.length,0);
+			System.out.println();
+			System.out.println("The total cost is "+ (path_length[dest] - path_length[source]) + ".");
+
+			return path_length[dest];
+		}
+		if(choice ==1 ){
+			return nextDestination(pathIndex, source, dest, path_length.length);
+		}
+		if(choice==3){
+			leastCost(pathIndex, source, dest, path_length.length, 1);
+		}
+		else return null;
+		return null;
+
+	}
+	public static String nextDestination(int[] pathIndex, int source, int dest, int len)
+	{
+		int[] route = new int[len];
+		int i = dest;
+		route[0] = i;
+		int k = 1;
+		while (pathIndex[i] != source)
+		{
+			i = pathIndex[i];
+			route[k] = i;
+			k++;
+		}
+		route[k] = source;
+		int h=0;
+		for (int j = k; j > 0; j--)
+		{
+
+			h++;
+			if(h==2)
+				return "\t\tRouter"+(route[j]+1);
+		}
+
+		if (h==1)
+		{
+			return "\t\tRouter"+(route[0]+1)+"( Direct )";
+		}
+		return null;
+	}
+
+	public static void leastCost(int[] pathIndex, int source, int dest, int len, int a)
+	{
+
+		int[] path = new int[len];
+		int i = dest;
+		path[0] = i;
+		int k = 1;
+		while (pathIndex[i] != source) 
+		{
+			i = pathIndex[i];
+			path[k] = i;
+			k++;
+		}
+		path[k] = source;
+
+		if(a==0)
+		{
+
+
+			for (int j = k; j > 0; j--)
+			{
+				System.out.print("Router " + (path[j] + 1) + " to ");
+				//h++;
+			}
+			System.out.print("Router " + (path[0] + 1)) ;
+		}
+		if(a==1)
+		{	
+			boolean flag=false;
+			if(k>0)
+			{
+				for (int j = k-1; j > 0; j--)
+				{
+					System.out.print("\t\tRouter " + (path[j] + 1) + "\n");
+					//h++;
+					flag=true;
+					break;
+				}
+			}
+
+			if(flag==false)
+			{
+				System.out.print("\t\tRouter " + (path[0] + 1)+" (Direct)\n") ;
+			}
+
+		}
+	}
+}

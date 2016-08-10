@@ -1,0 +1,393 @@
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Scanner;
+
+
+public class CS542Main 
+{
+	static CS542Main cn = new CS542Main();
+	static djikstras_shortest djikstra = new djikstras_shortest();
+	public static void main(String[] args) throws Exception 
+	{
+
+		int matrix[][]=null;
+		System.out.println("------------Sahil Chalke(A20354354)-----------------");
+		System.out.println("CS542 Link State Routing Simulator");
+		System.out.println("1. Create a Network Topology");
+		System.out.println("2. Build a Connection Table");
+		System.out.println("3. Shortest path to destination router");
+		System.out.println("4. Modify Topology");
+		System.out.println("5. Display Connection Table for all Nodes");
+		System.out.println("6. Modify the Link Cost");
+		System.out.println("7. Exit");
+		System.out.println("----------------------------------------------------");
+
+		Scanner sc = new Scanner(System.in);
+		int input = sc.nextInt();
+
+		while(input!=7)
+		{
+			switch (input)
+			{
+			case 1:
+				matrix = cn.displayMatrix();
+				display(matrix);
+				break;
+			case 2:
+				cn.connection_Table(matrix);
+				break;
+			case 3:
+				cn.dijkstra_1(matrix);
+				break;
+			case 4:
+				//	System.out.println("Under construction");
+				cn.delete(matrix);
+				break;
+			case 5:
+				//	System.out.println("Under Construction");
+				connection_all(matrix);
+				break;
+
+			case 6:
+				//System.out.println("Under Construction");
+				modifyCost(matrix);
+				break;
+			default:System.out.println("Invalid input please try again");
+			}
+			System.out.println("------------Sahil Chalke(A20354354)-----------------");
+			System.out.println("CS542 Link State Routing Simulator");
+			System.out.println("1. Create a Network Topology");
+			System.out.println("2. Build a Connection Table");
+			System.out.println("3. Shortest path to destination router");
+			System.out.println("4. Modify Topology");
+			System.out.println("5. Display Connection Table for all Nodes");
+			System.out.println("6. Modify the Link Cost");
+			System.out.println("7. Exit");
+			System.out.println("----------------------------------------------------");
+			input=sc.nextInt();
+
+		}
+		System.out.println("Exit CS542 Project. GoodBye!!");
+	}
+	/*
+	 * The below method is used to find the shortest [ath between the source and
+	 * destination router.
+	 */
+	public static void dijkstra_1 (int matrix[][]) throws IOException
+	{
+		System.out.println("Enter the source router");
+		Scanner sc=new Scanner(System.in);
+		int src = Integer.parseInt(sc.nextLine()) - 1;
+		System.out.println("Enter the destination router");
+		int dest = Integer.parseInt(sc.nextLine()) - 1;
+		djikstra.dijkstra(matrix,src,dest,2);
+	}
+
+
+	/*
+	 * The below method is used to delete the Router and 
+	 * create an new matrix which will be used to find the new connection table
+	 * and  new shortest path between source and destination router
+	 */
+	public static void delete(int matrix[][]) throws IOException
+	{
+
+		Scanner sc=new Scanner(System.in);
+		BufferedReader br =  new BufferedReader(new FileReader("input.txt"));
+		int count=0;
+		while(br.readLine()!=null)
+		{
+			count++;
+		}
+
+		int[][] grid=new int[count][count];
+
+		int i=0,j=0;
+
+		try{
+
+			FileReader reader = new FileReader("input.txt");
+			BufferedReader br1 = new BufferedReader(reader);
+			String line;
+
+			while((line=br1.readLine())!=null)
+			{
+				j=0;
+				String delim = "[ ]+";
+				String tokens[] = line.split(delim);
+
+				for(String a : tokens)
+				{
+					grid[i][j] = Integer.parseInt(a);
+					j++;
+				}
+				i++;
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		System.out.println("Enter the router to be deleted");
+		int router=sc.nextInt();
+
+		int [][] delete=new int[count][count];
+
+		int p=0;
+		for(int n=0;n<count;n++)
+		{
+			if(n==router-1)
+			{	
+				for(int e=0;e<count;e++){
+					delete[n][e]=-1;
+				}
+				p++;
+				continue;
+			}
+			int q=0;
+			for(int m=0;m<count;m++)
+			{
+				if(m==router-1)
+				{
+					delete[p][q]=-1;
+					++q;
+					continue;
+				}
+				delete[p][q]=grid[n][m];
+				++q;
+
+			}
+			++p;
+		}
+
+		for(int i1=0; i1<count; i1++){
+			for(int j1=0;j1<count;j1++){
+				if(i1==j1)
+				{
+					delete[i1][j1]=0;
+				}
+			}
+		}
+
+		System.out.println("Displaying the new matrix topology with the router removed");
+		display(delete);
+
+		System.out.println("Do you find the new shortest path from source to destination"
+				+ "with new matrix(Y/N)");
+
+		BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
+		String inp = buffer.readLine();
+
+		if(inp.contains("Y")){
+			System.out.println("Enter the Source Router");
+			int newsource=sc.nextInt()-1;
+			System.out.println("Enter the Destination Router");
+			int dest=sc.nextInt()-1;
+
+			djikstra.dijkstra(delete,newsource,dest,2);
+		}
+
+		System.out.println("Do you want to find the new connection table for a particular node in this case(Y/N)");
+
+
+		String inp1 = buffer.readLine();
+
+		if(inp1.contains("Y"))
+		{
+			//connection_Table(delete);
+			System.out.println("Enter the router");
+			int r=sc.nextInt();
+			System.out.println("Destination\t\tInterface");
+			for(int n=0;n<delete.length;n++)
+			{
+				if(n!=r-1 && n!=router-1 )
+				{
+					System.out.print("Router "+(n+1));
+					djikstra.dijkstra(delete, r-1, n, 3);
+				}
+			}
+		}
+	}
+
+
+	/*
+	 * This method is used to display the connection table of individual routers
+	 */
+	public static void connection_Table(int matrix[][])
+	{	
+		Scanner sc=new Scanner(System.in);
+		System.out.println("Enter the router");
+		int r=sc.nextInt();
+		System.out.println("Destination\t\tInterface");
+		for(int n=0;n<matrix.length;n++)
+		{
+			if(n!=r-1)
+			{
+				System.out.print("Router "+(n+1));
+				djikstra.dijkstra(matrix, r-1, n, 3);
+			}
+		}	
+	}
+
+
+	/*
+	 * This methos is used to diplay the matrix
+	 */
+	public static void display1(Object arr[][])
+	{
+		for(int i=0; i<arr.length; i++)
+		{
+			for(int j=1; j<arr[0].length; j++)
+			{
+				System.out.print(arr[i][j]+" ");
+			}
+			System.out.println();
+		}
+	}
+
+
+	/*
+	 * This method is used to diplay the topology matrix
+	 */
+	public static int[][] displayMatrix() throws IOException 
+	{
+
+		int row = 0 , column =0;
+		String line[]=null;
+		Scanner sc = new Scanner(System.in);
+		String st = "input.txt";
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(st));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			System.out.println("File not found. Please keep the file at proper destination");
+		}
+
+		String rowText ;
+
+		while ((rowText= br.readLine()) != null)
+		{
+			row++;
+			line = rowText.split(" ");
+			column= line.length;
+
+		}
+
+
+		System.out.println("The input matrix is ");
+		int matrix[][]= new int[row][column];
+		br.close();
+		//System.out.println(column);
+
+		return store(st,column);
+
+	}
+
+	/*
+	 * This matrix will store the input topolgy matrix in matrix form.
+	 */
+	public static int[][] store(String s,int column) throws NumberFormatException, IOException
+	{
+		int temp=0;
+		String rowText1;
+		int matrix[][] = new int[column][column];
+		BufferedReader br1= new BufferedReader(new FileReader(s));
+
+		while ((rowText1 = br1.readLine()) != null)
+		{
+			String line[] = rowText1.split(" ");
+
+			for (int i = 0; i < column; i++) 
+			{
+				matrix[temp][i] = Integer.parseInt(line[i]);
+			}
+			temp++;
+		}
+
+
+		br1.close();
+
+		return matrix;	
+
+	}
+
+	public static void display(int x[][])
+	{
+		for(int i=0;i<x.length;i++)
+		{
+			for(int j=0;j<x.length;j++)
+			{
+				System.out.print(x[i][j] + " ");
+			}
+			System.out.println();
+		}
+	}
+
+
+	/*
+	 * This method will display the connection table for all routers at one go
+	 */
+	public static void connection_all(int matrix[][])
+	{	
+		Scanner sc=new Scanner(System.in);
+		//	System.out.println("Enter the router");
+		int r=1;
+
+
+		while(r<=matrix.length){
+			System.out.println();
+			System.out.println("Connection Table for Router "+r);
+			System.out.println("Destination\t\tInterface");
+			for(int n=0;n<matrix.length;n++)
+			{
+				if(n!=r-1)
+				{
+					System.out.print("Router "+(n+1));
+					djikstra.dijkstra(matrix, r-1, n, 3);
+				}
+
+			}
+			r++;
+		}
+	}
+
+	/*
+	 * This method will modify the link cost between routers and display the 
+	 * connection table for all routers. 
+	 */
+
+	public static void modifyCost(int matrix[][])
+	{
+		System.out.println("*To modify the cost the routers must be neighbouring routers "
+				+ "in the topology");
+		System.out.println("Enter the 1st router");
+		Scanner sc=new Scanner(System.in);
+		int row=sc.nextInt();
+		System.out.println("Enter the 2nd Router");
+		int coloumn=sc.nextInt();
+		System.out.println("Enter the new cost between Router "+row+" and Router "+coloumn);
+		int cost=sc.nextInt();
+		matrix[row-1][coloumn-1]=matrix[coloumn-1][row-1]=cost;
+
+		display(matrix);
+
+		System.out.println("Displaying the new connection table for each node:");
+		connection_all(matrix);
+
+		System.out.println("To find the shortest path:-");
+		System.out.println("Enter the source router");
+		int newsource=sc.nextInt()-1;
+		System.out.println("Enter the destination router");
+		int dest=sc.nextInt()-1;
+
+		djikstra.dijkstra(matrix,newsource,dest,2);
+
+	}
+
+
+}
